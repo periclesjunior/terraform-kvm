@@ -1,9 +1,9 @@
 # add the provider, this code will connect to Hypervisor using libvirt
 provider "libvirt" {
-  uri = "qemu:///system"
+  uri = var.libvirt_uri
 }
 
-# create pool
+# create tmp pool with local-exec
 resource "libvirt_pool" "ubuntu" {
  provisioner "local-exec" {
     command = "mkdir -p /tmp/tmp_pool"
@@ -15,17 +15,15 @@ resource "libvirt_pool" "ubuntu" {
 
 # create image volume
 resource "libvirt_volume" "image-qcow2" {
- name = "ubuntu18.04.qcow2"
+ name = var.disk_name
  pool = libvirt_pool.ubuntu.name
-#Link for download
-#source = "https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img"
- source = "/tmp/bionic-server-cloudimg-amd64.img"
+ source = var.img_src
  format = "qcow2"
 }
 
 # add cloudinit disk to pool
 resource "libvirt_cloudinit_disk" "commoninit" {
- name = "commoninit.iso"
+ name = var.cloudinit_iso
  pool = libvirt_pool.ubuntu.name
  user_data = data.template_file.user_data.rendered
 }
@@ -38,14 +36,14 @@ data "template_file" "user_data" {
 # Define KVM domain to create
 resource "libvirt_domain" "test" {
   name   = "test"
-  memory = "2048"
-  vcpu   = 1
+  memory = var.domain_mem
+  vcpu   = var.domain_vcpu
 
   cloudinit = libvirt_cloudinit_disk.commoninit.id
 
   network_interface {
     network_name = "default"
-    wait_for_lease = true
+    wait_for_lease = var.net_lease
   }
 
   disk {
@@ -69,7 +67,7 @@ resource "libvirt_domain" "test" {
 
 # Print the IP
 # Can use `virsh domifaddr <vm_name> <interface>` to get the ip later
-output "ips" {
-  # show IP, run 'terraform refresh' if not populated
-  value = libvirt_domain.test.*.network_interface.0.addresses
-}
+#output "ips" {
+#  # show IP, run 'terraform refresh' if not populated
+#  value = libvirt_domain.test.*.network_interface.0.addresses
+#}
