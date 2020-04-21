@@ -14,6 +14,8 @@ variable "img_src" {
   description = "IMG source local or remote"
   type        = string
   default     = "/tmp/bionic-server-cloudimg-amd64.img"
+#  If you prefer download img, be patient. ;-)
+#  default     = "https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img"
 }
 
 variable "cloudinit_iso" {
