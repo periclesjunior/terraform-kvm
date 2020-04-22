@@ -4,12 +4,6 @@ variable "libvirt_uri" {
   default     = "qemu:///system"
 }
 
-variable "disk_name" {
-  description = "VM disk name"
-  type        = string
-  default     = "ubuntu18.04.qcow2"
-}
-
 variable "img_src" {
   description = "IMG source local or remote"
   type        = string
