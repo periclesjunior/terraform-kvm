@@ -4,6 +4,12 @@ variable "libvirt_uri" {
   default     = "qemu:///system"
 }
 
+variable "domain_count" {
+  description = "Set number of Libvirt Domains and your Disks"
+  type        = string
+  default     = "2"
+}
+
 variable "img_src" {
   description = "IMG source local or remote"
   type        = string

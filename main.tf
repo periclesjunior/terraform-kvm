@@ -5,37 +5,41 @@ provider "libvirt" {
 
 # create tmp pool with local-exec
 resource "libvirt_pool" "ubuntu" {
- provisioner "local-exec" {
+  provisioner "local-exec" {
     command = "mkdir -p /tmp/tmp_pool"
- }
- name = "tmp_pool"
- type = "dir"
- path = "/tmp/tmp_pool"
+  }
+  name = "tmp_pool"
+  type = "dir"
+  path = "/tmp/tmp_pool"
 }
 
 # create image volume
 resource "libvirt_volume" "image-qcow2" {
- name = var.disk_name
- pool = libvirt_pool.ubuntu.name
- source = var.img_src
- format = "qcow2"
+  #count  = "2"
+  count  = var.domain_count
+  name = format("disk_ubuntu%03d.qcow2",count.index+1)
+  pool = libvirt_pool.ubuntu.name
+  source = var.img_src
+  format = "qcow2"
 }
 
 # add cloudinit disk to pool
 resource "libvirt_cloudinit_disk" "commoninit" {
- name = var.cloudinit_iso
- pool = libvirt_pool.ubuntu.name
- user_data = data.template_file.user_data.rendered
+  name = var.cloudinit_iso
+  pool = libvirt_pool.ubuntu.name
+  user_data = data.template_file.user_data.rendered
 }
 
 # read the configuration
 data "template_file" "user_data" {
- template = file("cloud_init.cfg")
+  template = file("cloud_init.cfg")
 }
 
 # Define KVM domain to create
-resource "libvirt_domain" "test" {
-  name   = "test"
+resource "libvirt_domain" "ubuntu" {
+  #count  = "2"
+  count  = var.domain_count
+  name = format("node_ubuntu%03d", count.index+1)
   memory = var.domain_mem
   vcpu   = var.domain_vcpu
 
@@ -47,7 +51,7 @@ resource "libvirt_domain" "test" {
   }
 
   disk {
-    volume_id = libvirt_volume.image-qcow2.id
+    volume_id = libvirt_volume.image-qcow2[count.index].id
   }
 
   console {
