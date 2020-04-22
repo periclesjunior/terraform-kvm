@@ -15,7 +15,6 @@ resource "libvirt_pool" "ubuntu" {
 
 # create image volume
 resource "libvirt_volume" "image-qcow2" {
-  #count  = "2"
   count  = var.domain_count
   name = format("disk_ubuntu%03d.qcow2",count.index+1)
   pool = libvirt_pool.ubuntu.name
@@ -37,7 +36,6 @@ data "template_file" "user_data" {
 
 # Define KVM domain to create
 resource "libvirt_domain" "ubuntu" {
-  #count  = "2"
   count  = var.domain_count
   name = format("node_ubuntu%03d", count.index+1)
   memory = var.domain_mem
